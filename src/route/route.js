@@ -9,12 +9,10 @@ router.get("/test-me", function (req, res) {
 })
 
 
-// ==================================================================================================================================
-                                          //   POST URL  Create Shorten
-// ==================================================================================================================================
-
 
 router.post('/url/shorten', urlController.createShortUrl)
+
+router.get('/:urlCode', urlController.getUrl)
 
 
 module.exports = router
