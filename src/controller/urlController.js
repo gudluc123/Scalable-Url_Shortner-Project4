@@ -35,24 +35,32 @@ const createShortUrl = async function (req, res) {
         if (!isValidUrl(longUrl))
          return res.status(400).send({ status: false, message: "Invalid URL" })
 
-        const baseUrl = "localhost:3000"
-        const urlCode = shortid.generate() // to generate the unique url like /hafsd, /43nnnj
-        const shortUrl = `${baseUrl}/${urlCode}`  //this is called template literal
-        const data = {
-            longUrl: longUrl,
-            shortUrl: shortUrl,
-            urlCode: urlCode
-        }
-
-        const createUrl = await urlModel.create(data)
-
-        const id = createUrl._id
-
-        const getUrl = await urlModel.findById(id).select({ _id: 0, __v: 0 })
-
-        return res.status(201).send({ status: true, data: getUrl })
+         
+         const baseUrl = "localhost:3000"
+         const urlCode = shortid.generate() // to generate the unique url like /hafsd, /43nnnj
+         const shortUrl = `${baseUrl}/${urlCode}`  //this is called template literal
+         const data = {
+             longUrl: longUrl,
+             shortUrl: shortUrl,
+             urlCode: urlCode
+            }
 
 
+            const isPresentUrlCode = await urlModel.findOne({longUrl:longUrl})
+           
+            if(isPresentUrlCode) {return res.status(400)
+                .send({status:false, message:"shortUrl Already Generated From Given longUrl"})}
+            
+            const createUrl = await urlModel.create(data)
+            
+            const id = createUrl._id
+            
+            const getUrl = await urlModel.findById(id).select({ _id: 0, __v: 0 })
+            
+
+            return res.status(201).send({ status: true, data: getUrl })
+            
+            
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
@@ -75,7 +83,7 @@ const getUrl = async function (req, res) {
 
         const getLongUrl = getUrl.longUrl
 
-        return res.redirect(302, getLongUrl)
+        return res.redirect(302, getLongUrl) //302 stand for successfull redirection
 
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
