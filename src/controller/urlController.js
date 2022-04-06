@@ -34,7 +34,31 @@ const createShortUrl = async function (req, res) {
 
         if (!isValidUrl(longUrl))
          return res.status(400).send({ status: false, message: "Invalid URL" })
+        
 
+         const getUrl = await urlModel.findOne({longUrl:longUrl})
+
+            // console.log(getUrl)
+            if ( getUrl){
+    
+            return res.status(201).send({ status: true,msg:"long url already exists", data: getUrl.shortUrl})
+            } else{ 
+                const baseUrl = "localhost:3000"
+                const urlCode = shortid.generate() // to generate the unique url like /hafsd, /43nnnj
+                const shortUrl = `${baseUrl}/${urlCode}`  //this is called template literal
+                const data = {
+                    longUrl: longUrl,
+                    shortUrl: shortUrl,
+                    urlCode: urlCode
+                   }
+               
+                
+                   
+                   const createUrl = await urlModel.create(data)
+                  res.status(201).send({status:true, data:createUrl}) 
+
+            }
+            
          
          const baseUrl = "localhost:3000"
          const urlCode = shortid.generate() // to generate the unique url like /hafsd, /43nnnj
@@ -44,21 +68,12 @@ const createShortUrl = async function (req, res) {
              shortUrl: shortUrl,
              urlCode: urlCode
             }
-
-
-            const isPresentUrlCode = await urlModel.findOne({longUrl:longUrl})
-           
-            if(isPresentUrlCode) {return res.status(400)
-                .send({status:false, message:"shortUrl Already Generated From Given longUrl"})}
+        
+         
             
             const createUrl = await urlModel.create(data)
             
-            const id = createUrl._id
             
-            const getUrl = await urlModel.findById(id).select({ _id: 0, __v: 0 })
-            
-
-            return res.status(201).send({ status: true, data: getUrl })
             
             
     } catch (err) {
