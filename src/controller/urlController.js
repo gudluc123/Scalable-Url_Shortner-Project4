@@ -58,13 +58,19 @@ const createShortUrl = async function (req, res) {
             return res.status(400).send({ status: false, message: "Invalid URL" })
 
 
-        const getUrl = await urlModel.findOne({ longUrl: longUrl })
-
-        // console.log(getUrl)
-        if (getUrl) {
-
-            return res.status(201).send({ status: true, msg: "long url already exists", data: getUrl.shortUrl })
-        } else {
+        const getDataFromCache = await GET_ASYNC(`${longUrl}`)
+        
+        if(getDataFromCache){
+            console.log("from cache")
+            res.send({
+                NOTE : "THIS ShortUrl CAME FROM CACHE",
+                Message: "From given longUrl, the shortUrl already created",
+                ShortUrl : JSON.parse(getDataFromCache)})
+            
+            // return false
+            
+        }
+            else {
             const baseUrl = "localhost:3000"
             const urlCode = shortid.generate() // to generate the unique url like /hafsd, /43nnnj
             const shortUrl = `${baseUrl}/${urlCode}`  //this is called template literal
@@ -73,15 +79,15 @@ const createShortUrl = async function (req, res) {
                 shortUrl: shortUrl,
                 urlCode: urlCode
             }
-
-
             const createUrl = await urlModel.create(data)
+            const id = createUrl._id
+            const getData = await urlModel.findById(id).select({_id:0,__v:0})
 
-            res.status(201).send({ status: true, data: createUrl })
+            const setDataInCache = await SET_ASYNC(`${longUrl}`, JSON.stringify(`${shortUrl}`))
+            console.log(setDataInCache)
 
-        }
-
-
+            res.status(201).send({ status: true, data: getData })
+         }
 
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
@@ -105,7 +111,7 @@ const getUrl = async function (req, res) {
         const getDataFromCache = await GET_ASYNC(`${urlCode}`)
 
         if (getDataFromCache) {
-            console.log("from catch")
+            console.log("from cache")
 
             res.redirect(302, JSON.parse(getDataFromCache)) // data must be in JSON format when you want to redirect
 
