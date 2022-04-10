@@ -28,9 +28,12 @@ const isValidRequestBody = function (requestBody) {
 }
 
 const isValidUrl = function (value) {
-    urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
-    return urlRegex.test(value);
-}
+    urlRegex = /^https?:\/\/([\w\d\-]+\.)+\w{2,}(\/.+)?$/;
+    return urlRegex.test(value)
+      
+    }
+    
+
 
 const isValid = function (value) {
     if (typeof value === "undefined" || value === null) return false
@@ -56,7 +59,6 @@ const createShortUrl = async function (req, res) {
 
         if (!isValidUrl(longUrl))
             return res.status(400).send({ status: false, message: "Invalid URL" })
-
 
         const getDataFromCache = await GET_ASYNC(`${longUrl}`)
         
